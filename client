@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+import sys, socket, colorama
+
+SERVER_ADDRESS = "127.0.0.1"
+SERVER_PORT = 8000
+
+def Response(text, code, exit = False):
+	colour = None
+
+	match code:
+		case 0:
+			colour = colorama.Fore.RED
+		case 1:
+			colour = colorama.Fore.GREEN
+		case 2:
+			colour = colorama.Fore.BLUE
+
+	print("{}[{}+{}]{} {}".format(
+		colorama.Style.RESET_ALL,
+		colour,
+		colorama.Style.RESET_ALL,
+		colorama.Fore.WHITE,
+		text
+	))
+
+	if code == 0 or exit:
+		sys.exit()
+
+def CloseServer(client):
+	if client == None:
+		Response("Exit process called. Exiting program.", 1, True)
+		sys.exit()
+	Response("Exit process called. Closing client socket and exiting program.", 1, True)
+	client.close()
+	sys.exit()
+
+encode = 'utf-8'
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((SERVER_ADDRESS, SERVER_PORT))
+client.send(("Client {} reporting for duty.".format(client.getpeername())).encode(encode))
+CloseServer(client)

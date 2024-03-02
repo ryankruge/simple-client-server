@@ -1,0 +1,57 @@
+#!/usr/bin/python3
+import sys, socket, colorama
+
+SERVER_ADDRESS = "127.0.0.1"
+SERVER_PORT = 8000
+SERVER_MAX_QUEUE = 15
+
+server = None
+listening = True
+
+def Response(text, code, exit = False):
+	colour = None
+
+	match code:
+		case 0:
+			colour = colorama.Fore.RED
+		case 1:
+			colour = colorama.Fore.GREEN
+		case 2:
+			colour = colorama.Fore.BLUE
+
+	print("{}[{}+{}]{} {}".format(
+		colorama.Style.RESET_ALL,
+		colour,
+		colorama.Style.RESET_ALL,
+		colorama.Fore.WHITE,
+		text
+	))
+
+	if code == 0 or exit:
+		sys.exit()
+
+def CloseServer(server):
+	if server == None:
+		Response("Exit process called. Exiting program.", 1, True)
+		sys.exit()
+	Response("Exit process called. Closing server and exiting program.", 1, True)
+	server.close()
+	sys.exit()
+
+try:
+	Response("Initialising server.", 2)
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server.bind((SERVER_ADDRESS, SERVER_PORT))
+	server.listen(SERVER_MAX_QUEUE)
+	Response("Successfully opened server!", 1)
+
+	while listening:
+		(client, client_address) = server.accept()
+		Response("Incoming connection [{}].".format(client_address), 2)
+
+		while True:
+			buffer = client.recv(4096)
+			decode = "utf-8"
+			Response(buffer.decode(decode), 1, 1)
+except KeyboardInterrupt:
+	CloseServer(server)
